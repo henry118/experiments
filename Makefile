@@ -1,11 +1,8 @@
+CC = g++
 OBJS = main.o
 
-my: $(OBJS)
-	$(CXX) -o $@ $^
-
-%.o: %.cpp
-	$(CXX) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+main: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm *.o my
+	rm -f *.o my
