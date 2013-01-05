@@ -5,4 +5,4 @@ main: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f *.o my
+	$(RM) *.o main
