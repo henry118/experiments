@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project(asiosock)
+find_package(Boost 1.42 REQUIRED COMPONENTS system date_time filesystem)
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(server main.cpp)
+target_link_libraries(server ${Boost_LIBRARIES})
