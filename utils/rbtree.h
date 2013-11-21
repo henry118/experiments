@@ -65,7 +65,8 @@ public:
             remove(root);
     }
     void pretty_print() const {
-        pretty_print(root);
+        unsigned mask = 0;
+        pretty_print(root, &mask);
     }
 private:
     node * newnode(T newval) {
@@ -97,7 +98,7 @@ private:
         }
         return null;
     }
-    void pretty_print(node * x) const {
+    void pretty_print(node * x, unsigned * mask) const {
         const static char * RED = "\33[22;31m";
         const static char * NC = "\33[0m";
 
@@ -105,17 +106,35 @@ private:
             return;
 
         int dps = depth(x);
+        if (dps > 32)
+            return;
+
+        if (x->right != null)
+            *mask |= 0x80000000 >> dps;
+
+        int i, j;
         if (dps > 0) {
-            std::cout << '|';
-            for (int i = 0; i < 4 * dps; i++)
-                std::cout << '-';
+            for (j = 0; j < 2; j++) {
+                for (i = 0; i < dps - 1; i++) {
+                    if (*mask & 0x80000000 >> i)
+                        std::cout << "|   ";
+                    else
+                        std::cout << "    ";
+                }
+                if (j == 0)
+                    std::cout << "|\n";
+                else
+                    std::cout << "+---";
+            }
         }
         if (x->color == node::red) std::cout << RED;
         std::cout << x->key;
         if (x->color == node::red) std::cout << NC;
         std::cout << std::endl;
-        pretty_print(x->left);
-        pretty_print(x->right);
+        pretty_print(x->left, mask);
+        *mask &= ~(0x80000000 >> dps);
+        pretty_print(x->right, mask);
+        *mask &= 0xFFFFFFFF << (32 - dps);
     }
     node * minimum(node * x) const {
         assert(x != null);
