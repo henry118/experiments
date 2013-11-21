@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string.h>
 #include <cassert>
+#include <iterator>
+#include <stdexcept>
 
 template<class T>
 class rbtree {
@@ -13,7 +15,9 @@ class rbtree {
         T key;
         node *left, *right, *parent;
     } *root, *null;
+
     size_t nodenum;
+
 public:
     rbtree() : nodenum(0) {
         null = new node;
@@ -21,10 +25,12 @@ public:
         null->color = node::black;
         root = null;
     }
+
     ~rbtree() {
         clear();
         delete null;
     }
+
     void insert(T key) {
         node *x = root, *y = null, *z = newnode(key);
         while (x != null) {
@@ -45,29 +51,101 @@ public:
         insert_fixup(z);
         ++nodenum;
     }
+
     void remove(T key) {
         node * z = find(key);
         if (!z || z == null)
             return;
         remove(z);
     }
+
     bool contains(T key) const {
         return find(key) != null;
     }
+
     bool empty() const {
         return root == null;
     }
+
     size_t size() const {
         return nodenum;
     }
+
     void clear() {
         while (root != null)
             remove(root);
     }
+
     void pretty_print() const {
         unsigned mask = 0;
         pretty_print(root, &mask);
     }
+
+    class iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+        rbtree<T> * tree;
+        rbtree<T>::node * x;
+    public:
+        iterator(rbtree<T> * tr, rbtree<T>::node * nd = 0) : tree(tr), x(nd) {}
+        iterator(const iterator & it) : tree(it.tree), x(it.x) {}
+        iterator & operator= (const iterator & it) {
+            tree = it.tree;
+            x = it.x;
+            return *this;
+        }
+        bool operator== (const iterator & it) const {
+            return tree == it.tree && x == it.x;
+        }
+        bool operator!= (const iterator & it) const {
+            return tree != it.tree || x != it.x;
+        }
+        const typename iterator::reference operator* () const {
+            if (x == tree->null)
+                throw std::range_error("out of bound");
+            return x->key;
+        }
+        const typename iterator::pointer operator-> () const {
+            if (x == tree->null)
+                throw std::range_error("out of bound");
+            return &x->key;
+        }
+        iterator & operator++ () {
+            if (x == tree->null)
+                throw std::range_error("out of bound");
+            x = tree->successor(x);
+            return *this;
+        }
+        iterator & operator-- () {
+            if (x == tree->null)
+                x = tree->maximum(tree->root);
+            else
+                x = tree->predecessor(x);
+            return *this;
+        }
+        iterator operator++ (int) {
+            iterator it(tree, x);
+            this->operator++();
+            return it;
+        }
+        iterator operator-- (int) {
+            iterator it(tree, x);
+            this->operator--();
+            return it;
+        }
+    };
+
+    typedef iterator const_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef reverse_iterator const_reverse_iterator;
+
+    iterator begin() { return iterator(this, minimum(root)); }
+    iterator end() { return iterator(this, null); }
+    const_iterator begin() const { return const_iterator(this, minimum(root)); }
+    const_iterator end() const { return const_iterator(this, null); }
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+
 private:
     node * newnode(T newval) {
         node * n = new node;
@@ -78,7 +156,9 @@ private:
         n->parent = null;
         return n;
     }
+
     int depth(node * x) const {
+        assert(x);
         int v = 0;
         while (x != root) {
             x = x->parent;
@@ -86,8 +166,9 @@ private:
         }
         return v;
     }
+
     node * find(T key) const {
-        node * x = root;
+        const node * x = root;
         while (x != null) {
             if (x->key == key) {
                 return x;
@@ -98,6 +179,7 @@ private:
         }
         return null;
     }
+
     void pretty_print(node * x, unsigned * mask) const {
         const static char * RED = "\33[22;31m";
         const static char * NC = "\33[0m";
@@ -136,6 +218,7 @@ private:
         pretty_print(x->right, mask);
         *mask &= 0xFFFFFFFF << (32 - dps);
     }
+
     node * minimum(node * x) const {
         assert(x != null);
         node * y = x;
@@ -143,13 +226,39 @@ private:
             y = y->left;
         return y;
     }
+
     node * maximum(node * x) const {
         assert(x != null);
         node * y = x;
-        while (y->right = null)
+        while (y->right != null)
             y = y->right;
         return y;
     }
+
+    node * successor(node * x) const {
+        assert(x != null);
+        if (x->right != null)
+            return minimum(x->right);
+        node * y = x->parent;
+        while (y != null && x == y->right) {
+            x = y;
+            y = y->parent;
+        }
+        return y;
+    }
+
+    node * predecessor(node * x) const {
+        assert(x != null);
+        if (x->left != null)
+            return maximum(x->left);
+        node * y = x->parent;
+        while (y != null && x == y->left) {
+            x = y;
+            y = y->parent;
+        }
+        return y;
+    }
+
     void left_rotate(node * x) {
         node * y = x->right;
         x->right = y->left;
@@ -165,6 +274,7 @@ private:
         y->left = x;
         x->parent = y;
     }
+
     void right_rotate(node * x) {
         node * y = x->left;
         x->left = y->right;
@@ -180,6 +290,7 @@ private:
         y->right = x;
         x->parent = y;
     }
+
     void transplant(node * u, node * v) {
         if (u->parent == null)
             root = v;
@@ -189,6 +300,7 @@ private:
             u->parent->right = v;
         v->parent = u->parent;
     }
+
     void remove(node * z) {
         node *y = z, *x = null;
         typename node::color_t y_orig_color = y->color;
@@ -219,6 +331,7 @@ private:
         delete z;
         --nodenum;
     }
+
     void insert_fixup(node * z) {
         node *y = 0;
         while (z->parent->color == node::red) {
@@ -258,6 +371,7 @@ private:
         }
         root->color = node::black;
     }
+
     void remove_fixup(node * x) {
         node * w = null;
         while (x != root && x->color == node::black) {
