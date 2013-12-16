@@ -99,11 +99,12 @@ class EmacsTTS:
 ##
 ttsEng = EmacsTTS()
 
-def say(*text):
+def say(*args):
     try:
-        ttsEng.say(text[0])
+        ttsEng.say(args[0])
     except e, Exception:
         print e
+    return args
 
 def shutup():
     try:
@@ -142,9 +143,9 @@ def voices():
         print e
     return ""
 
-def setvoice(name):
+def setvoice(*args):
     try:
-        ttsEng.setvoice(name)
+        ttsEng.setvoice(args[0])
     except e, Exception:
         print e
 
@@ -155,12 +156,12 @@ def setvoice(name):
 if __name__ == "__main__":
     server = EPCServer(("localhost", 5085))
     server.register_function(say)
-    server.register_function(stop)
+    server.register_function(shutup)
     server.register_function(louder)
     server.register_function(quieter)
     server.register_function(faster)
     server.register_function(slower)
-    server.register_function(voice_list)
-    server.register_function(set_voice)
+    server.register_function(voices)
+    server.register_function(setvoice)
     server.print_port()
     server.serve_forever()
