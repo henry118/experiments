@@ -32,11 +32,16 @@
 
 
 ;;; Code:
-
 (require 'epc)
 
 ;;;###autoload
-(defvar emacstts-epc (epc:start-epc "python" '("emacstts.py")))
+(defcustom emacstts-py-script (locate-file "emacstts.py" load-path)
+    "The full path name of the emacstts.py script."
+    :type 'string
+    :group 'emacstts)
+
+;;;###autoload
+(defvar emacstts-epc (epc:start-epc "python" (list emacstts-py-script)))
 
 ;;;###autoload
 (defun emacstts-destroy()
@@ -79,6 +84,7 @@
   "Reduce the volume"
   (interactive)
   (epc:call-sync emacstts-epc 'quieter '())
+)
 
 ;;;###autoload
 (defun emacstts-faster()
