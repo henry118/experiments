@@ -1,61 +1,110 @@
 #!/usr/bin/env python
 
 import pyttsx
-from multiprocessing import Pool
 from epc.server import *
 
+##
+# TTS class
+##
+class EmacsTTS:
+    def __init__(self):
+        self._eng = pyttsx.init()
+        self._eng.connect("started-utterance", self._onStart)
+        self._eng.connect("started-word", self._onWord)
+        self._eng.connect("finished-utterance", self._onEnd)
+
+    def say(self, text):
+        print "say..."
+        try:
+            self._eng.endLoop()
+        except:
+            pass
+        self._eng.say(text)
+        self._eng.startLoop(False)
+        self._eng.iterate()
+
+    def shutup(self):
+        print "shutup..."
+        self._eng.stop()
+
+    def louder(self):
+        print "louder..."
+        #self.say("louder")
+        volume = self._eng.getProperty("volume")
+        self._eng.setProperty("volume", volume+0.25)
+
+    def quieter(self):
+        print "quieter..."
+        volume = self._eng.getProperty("volume")
+        self._eng.setProperty("volume", volume-0.25)
+
+    def faster(self):
+        rate = self._eng.getProperty("rate")
+        print "faster %d => %d" %(rate, rate+10)
+        self._eng.setProperty("rate", rate+10)
+
+    def slower(self):
+        rate = self._eng.getProperty("rate")
+        print "slower %d => %d" %(rate, rate-10)
+        self._eng.setProperty("rate", rate-10)
+
+    def voices(self):
+        print "voices..."
+        v = []
+        for voice in self._eng.getProperty("voices"):
+            v.append(voice.name)
+        return v
+
+    def setvoice(self, name):
+        print "setvoice..."
+        for voice in self._eng.getProperty("voices"):
+            if voice.name == name:
+                self._eng.setProperty("voice", voice.id)
+                break
+
+    def _onStart(self, name):
+        print "onStart..."
+
+    def _onWord(self, name, location, length):
+        print "onWord..."
+
+    def _onEnd(self, name, completed):
+        print "onEnd..."
+
+
+##
+# Public interfaces
+##
+ttsEng = EmacsTTS()
+
 def say(*text):
-    for msg in text:
-        print "say %s" %(msg)
-        ttsEng.say(msg)
-    ttsEng.runAndWait()
+    ttsEng.say(text[0])
 
-def async_say(*text):
-    ttsPool.apply_async(say, text)
-
-def stop():
-    ttsEng.stop()
+def shutup():
+    ttsEng.shutup()
 
 def louder():
-    volume = ttsEng.getProperty("volume")
-    ttsEng.setProperty("volume", volume+0.25)
+    ttsEng.louder()
 
 def quieter():
-    volume = ttsEng.getProperty("volume")
-    ttsEng.setProperty("volume", volume-0.25)
+    ttsEng.quieter()
 
 def faster():
-    rate = ttsEng.getProperty("rate")
-    ttsEng.setProperty("rate", rate+50)
+    ttsEng.faster()
 
 def slower():
-    rate = ttsEng.getProperty("rate")
-    ttsEng.setProperty("rate", rate-50)
+    ttsEng.slower()
 
-def voice_list():
-    v = []
-    for voice in ttsEng.getProperty("voices"):
-        v.append(voice.id)
-    return v
+def voices():
+    return ttsEng.voices()
 
-def set_voice(voice):
-    ttsEng.setProperty("voice", voice)
+def setvoice(name):
+    ttsEng.setvoice(name)
 
-def _onStart(name):
-    print "onStart..."
 
-def _onWord(name, location, length):
-    pass
-
-def _onEnd(name, completed):
-    print "onEnd..."
-
-ttsEng = pyttsx.init()
-ttsEng.connect("started-utterance", _onStart)
-ttsEng.connect("started-word", _onWord)
-ttsEng.connect("finished-utterance", _onEnd)
-ttsPool = Pool()
-
+##
+# Main Program
+##
 if __name__ == "__main__":
     server = EPCServer(("localhost", 5085))
     server.register_function(say)
