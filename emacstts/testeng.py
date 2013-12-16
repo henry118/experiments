@@ -2,8 +2,6 @@
 
 import emacstts
 import cmd
-import threading
-import Queue
 import pyttsx
 import readline
 import rlcompleter
