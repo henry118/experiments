@@ -104,7 +104,6 @@ def say(*args):
         ttsEng.say(args[0])
     except e, Exception:
         print e
-    return args
 
 def shutup():
     try:
