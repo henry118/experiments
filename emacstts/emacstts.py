@@ -13,40 +13,59 @@ class EmacsTTS:
         self._eng.connect("started-word", self._onWord)
         self._eng.connect("finished-utterance", self._onEnd)
 
-    def say(self, text):
-        print "say..."
+    def _prepare(self):
         try:
             self._eng.endLoop()
         except:
             pass
+
+    def say(self, text):
+        print "say..."
+        self._prepare()
         self._eng.say(text)
         self._eng.startLoop(False)
-        self._eng.iterate()
+        for x in xrange(0,10):
+            self._eng.iterate()
 
     def shutup(self):
         print "shutup..."
         self._eng.stop()
 
     def louder(self):
-        print "louder..."
-        #self.say("louder")
-        volume = self._eng.getProperty("volume")
-        self._eng.setProperty("volume", volume+0.25)
+        self._prepare()
+        vol = self._eng.getProperty("volume")
+        newvol = vol + 0.25
+        print "louder %f => %f" %(vol, newvol)
+        self._eng.setProperty("volume", newvol)
+        self._eng.runAndWait()
+        self.say("louder")
 
     def quieter(self):
-        print "quieter..."
-        volume = self._eng.getProperty("volume")
-        self._eng.setProperty("volume", volume-0.25)
+        self._prepare()
+        vol = self._eng.getProperty("volume")
+        newvol = vol - 0.25
+        print "quieter %f => %f" %(vol, newvol)
+        self._eng.setProperty("volume", newvol)
+        self._eng.runAndWait()
+        self.say("quieter")
 
     def faster(self):
+        self._prepare()
         rate = self._eng.getProperty("rate")
-        print "faster %d => %d" %(rate, rate+10)
-        self._eng.setProperty("rate", rate+10)
+        newrate = rate + 50
+        print "faster %d => %d" %(rate, newrate)
+        self._eng.setProperty("rate", newrate)
+        self._eng.runAndWait()
+        self.say("faster")
 
     def slower(self):
+        self._prepare()
         rate = self._eng.getProperty("rate")
-        print "slower %d => %d" %(rate, rate-10)
-        self._eng.setProperty("rate", rate-10)
+        newrate = rate - 50
+        print "slower %d => %d" %(rate, newrate)
+        self._eng.setProperty("rate", newrate)
+        self._eng.runAndWait()
+        self.say("slower")
 
     def voices(self):
         print "voices..."
@@ -59,7 +78,10 @@ class EmacsTTS:
         print "setvoice..."
         for voice in self._eng.getProperty("voices"):
             if voice.name == name:
+                self._prepare()
                 self._eng.setProperty("voice", voice.id)
+                self._eng.runAndWait()
+                self.say("I am %s." % voice.name)
                 break
 
     def _onStart(self, name):
@@ -78,28 +100,53 @@ class EmacsTTS:
 ttsEng = EmacsTTS()
 
 def say(*text):
-    ttsEng.say(text[0])
+    try:
+        ttsEng.say(text[0])
+    except e, Exception:
+        print e
 
 def shutup():
-    ttsEng.shutup()
+    try:
+        ttsEng.shutup()
+    except e, Exception:
+        print e
 
 def louder():
-    ttsEng.louder()
+    try:
+        ttsEng.louder()
+    except e, Exception:
+        print e
 
 def quieter():
-    ttsEng.quieter()
+    try:
+        ttsEng.quieter()
+    except e, Exception:
+        print e
 
 def faster():
-    ttsEng.faster()
+    try:
+        ttsEng.faster()
+    except e, Exception:
+        print e
 
 def slower():
-    ttsEng.slower()
+    try:
+        ttsEng.slower()
+    except e, Exception:
+        print e
 
 def voices():
-    return ttsEng.voices()
+    try:
+        return ttsEng.voices()
+    except e, Exception:
+        print e
+    return ""
 
 def setvoice(name):
-    ttsEng.setvoice(name)
+    try:
+        ttsEng.setvoice(name)
+    except e, Exception:
+        print e
 
 
 ##
