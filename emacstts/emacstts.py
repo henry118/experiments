@@ -209,7 +209,7 @@ def main(port):
 ### Main Program ###
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("port", type=int, nargs="?", default=5685, help="The EPC server binding port")
+    parser.add_argument("port", type=int, nargs="?", default=0, help="The EPC server binding port")
     parser.add_argument("--log", default="error", help="Log level")
     args = parser.parse_args()
     logging.basicConfig(level=getattr(logging, args.log.upper()))
