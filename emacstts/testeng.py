@@ -17,6 +17,7 @@
 
 import emacstts
 import cmd
+import logging
 import pyttsx
 import readline
 import rlcompleter
@@ -85,4 +86,5 @@ class TestCmd(cmd.Cmd):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level="DEBUG")
     TestCmd().cmdloop()

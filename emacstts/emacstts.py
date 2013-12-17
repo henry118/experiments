@@ -17,6 +17,7 @@
 
 import pyttsx
 import logging
+import argparse
 from epc.server import *
 
 
@@ -135,70 +136,81 @@ def say(*args):
     """Request the engine to speak given text"""
     try:
         ttsEng.say(args[0])
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
 def shutup():
     """Ask the engine to stop speaking"""
     try:
         ttsEng.shutup()
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
 def louder():
     """Increase the voice's volume"""
     try:
         ttsEng.louder()
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
 def quieter():
     """Reduce the voice's volume"""
     try:
         ttsEng.quieter()
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
 def faster():
     """Increase the speaking rate (words/min)"""
     try:
         ttsEng.faster()
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
 def slower():
     """Reduce the speaking rate (words/min)"""
     try:
         ttsEng.slower()
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
 def voices():
     """Return a list of voices avaiable on the system"""
     try:
         return ttsEng.voices()
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
     return ""
 
 def setvoice(*args):
     """Set the current voice to the give person"""
     try:
         ttsEng.setvoice(args[0])
-    except e, Exception:
-        print e
+    except Exception, e:
+        logging.error(e)
 
+def main(port):
+    """Entry point of the EPC server"""
+    try:
+        server = EPCServer(("localhost", port))
+        server.register_function(say)
+        server.register_function(shutup)
+        server.register_function(louder)
+        server.register_function(quieter)
+        server.register_function(faster)
+        server.register_function(slower)
+        server.register_function(voices)
+        server.register_function(setvoice)
+        server.print_port()
+        server.serve_forever()
+    except Exception, e:
+        logging.error(e)
 
 ### Main Program ###
 if __name__ == "__main__":
-    server = EPCServer(("localhost", 5085))
-    server.register_function(say)
-    server.register_function(shutup)
-    server.register_function(louder)
-    server.register_function(quieter)
-    server.register_function(faster)
-    server.register_function(slower)
-    server.register_function(voices)
-    server.register_function(setvoice)
-    server.print_port()
-    server.serve_forever()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("port", type=int, nargs="?", default=5685, help="The EPC server binding port")
+    parser.add_argument("--log", default="error", help="Log level")
+    args = parser.parse_args()
+    logging.basicConfig(level=getattr(logging, args.log.upper()))
+    main(args.port)
