@@ -66,6 +66,13 @@
 )
 
 ;;;###autoload
+(defun emacstts-say-buffer()
+  "Read the text in the entire buffer"
+  (interactive)
+  (emacstts-say-region (point-min) (point-max))
+)
+
+;;;###autoload
 (defun emacstts-shutup()
   "Interrupt the current speaking"
   (interactive)
