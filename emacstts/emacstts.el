@@ -54,7 +54,7 @@
 (defun emacstts-say(text)
   "Read the supplied text"
   (interactive "sText: ")
-  (message "Speaking...")
+  ;(message "Speaking...")
   (epc:call-sync emacstts-epc 'say (list text))
 )
 
